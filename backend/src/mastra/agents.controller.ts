@@ -1,12 +1,13 @@
-import { Controller, Post, Body, Logger, Get, Param } from '@nestjs/common';
+import { Controller, Post, Body, Logger, Get, Param, BadRequestException } from '@nestjs/common';
 import { AgentsService } from './agents.service';
-import { OrchestratorInput } from './orchestrator.agent';
+import { OrchestratorInput } from './agents/orchestrator.agent';
+import { AgentName } from './mastra.config';
 
 @Controller('agents')
 export class AgentsController {
   private readonly logger = new Logger(AgentsController.name);
 
-  constructor(private readonly agentsService: AgentsService) {}
+  constructor(private readonly agentsService: AgentsService) { }
 
   @Post('orchestrator')
   async executeOrchestrator(@Body() input: OrchestratorInput) {
@@ -20,7 +21,14 @@ export class AgentsController {
     @Body() body: { input: string },
   ) {
     this.logger.log(`POST /agents/${agentName}`);
-    return this.agentsService.executeAgent(agentName, body.input);
+
+    // Validate that agentName is a valid AgentName
+    const validAgents: AgentName[] = ['orchestrator'];
+    if (!validAgents.includes(agentName as AgentName)) {
+      throw new BadRequestException(`Invalid agent name: ${agentName}. Valid agents: ${validAgents.join(', ')}`);
+    }
+
+    return this.agentsService.executeAgent(agentName as AgentName, body.input);
   }
 
   @Get('list')

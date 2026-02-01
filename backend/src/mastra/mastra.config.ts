@@ -1,5 +1,5 @@
 import { Mastra } from '@mastra/core';
-import { orchestratorAgent } from './orchestrator.agent';
+import { orchestratorAgent } from './agents/orchestrator.agent';
 
 /**
  * Mastra Configuration
@@ -24,8 +24,13 @@ export const agents = {
   orchestrator: mastra.getAgent('orchestrator'),
 };
 
+// Type for available agent names
+export type AgentName = 'orchestrator';
+// Add more agent names here as you create them
+// Example: export type AgentName = 'orchestrator' | 'dataAnalyst' | 'codeReviewer';
+
 // Helper function to get any agent by name
-export function getAgent(name: string) {
+export function getAgent(name: AgentName) {
   return mastra.getAgent(name);
 }
 
@@ -37,5 +42,19 @@ export async function executeOrchestrator(input: {
   sessionId?: string;
 }) {
   const agent = mastra.getAgent('orchestrator');
-  return await agent.generate(JSON.stringify(input));
+
+  // Format the input as a user message with context
+  const messages = [
+    { role: 'user' as const, content: input.task },
+  ];
+
+  // Add context as additional messages if provided
+  if (input.context) {
+    messages.push({
+      role: 'user' as const,
+      content: `Additional context: ${JSON.stringify(input.context)}`,
+    });
+  }
+
+  return await agent.generate(messages);
 }

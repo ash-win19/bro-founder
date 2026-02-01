@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AgentsModule } from './agents/agents.module';
+import { AgentsModule } from './mastra/agents/agents.module';
 
 @Module({
   imports: [
@@ -15,4 +15,4 @@ import { AgentsModule } from './agents/agents.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
