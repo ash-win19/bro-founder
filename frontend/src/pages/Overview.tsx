@@ -121,10 +121,10 @@ const Overview = () => {
               ← Back to Workspace
             </Button>
             <Button
-              onClick={() => navigate("/final-pitch")}
+              onClick={() => navigate("/DevPlan")}
               className="gap-2"
             >
-              Continue to Pitch <ArrowRight className="w-4 h-4" />
+              View Development Plan <ArrowRight className="w-4 h-4" />
             </Button>
           </motion.div>
         </motion.div>
