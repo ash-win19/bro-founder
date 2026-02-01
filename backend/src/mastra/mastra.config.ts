@@ -29,20 +29,12 @@ export const mastra = new Mastra({
 export const agents = {
   orchestrator: mastra.getAgent('orchestrator'),
   general: mastra.getAgent('general'),
-};
-
-// Type for available agent names
-export type AgentName = 'orchestrator' | 'general';
   business: mastra.getAgent('business'),
-};
-
-// Type for available agent names
-export type AgentName = 'orchestrator' | 'business';
   mvpPlanner: mastra.getAgent('mvpPlanner'),
 };
 
 // Type for available agent names
-export type AgentName = 'orchestrator' | 'mvpPlanner';
+export type AgentName = 'orchestrator' | 'general' | 'business' | 'mvpPlanner';
 // Add more agent names here as you create them
 // Example: export type AgentName = 'orchestrator' | 'dataAnalyst' | 'codeReviewer';
 
@@ -88,6 +80,56 @@ export async function executeGeneral(input: {
   // Format the input as a user message with context
   const messages = [
     { role: 'user' as const, content: input.question },
+  ];
+
+  // Add context as additional messages if provided
+  if (input.context) {
+    messages.push({
+      role: 'user' as const,
+      content: `Additional context: ${JSON.stringify(input.context)}`,
+    });
+  }
+
+  return await agent.generate(messages);
+}
+
+// Helper function to execute business agent
+export async function executeBusiness(input: {
+  question: string;
+  context?: Record<string, any>;
+  userId?: string;
+  sessionId?: string;
+}) {
+  const agent = mastra.getAgent('business');
+
+  // Format the input as a user message with context
+  const messages = [
+    { role: 'user' as const, content: input.question },
+  ];
+
+  // Add context as additional messages if provided
+  if (input.context) {
+    messages.push({
+      role: 'user' as const,
+      content: `Additional context: ${JSON.stringify(input.context)}`,
+    });
+  }
+
+  return await agent.generate(messages);
+}
+
+// Helper function to execute MVP planner agent
+export async function executeMvpPlanner(input: {
+  idea: string;
+  context?: Record<string, any>;
+  userId?: string;
+  sessionId?: string;
+}) {
+  const agent = mastra.getAgent('mvpPlanner');
+
+  // Format the input as a user message with context
+  const messages = [
+    { role: 'user' as const, content: input.idea },
   ];
 
   // Add context as additional messages if provided
