@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AgentsModule } from './mastra/agents/agents.module';
+import { AgentsModule } from './mastra/agents.module';
 
 @Module({
   imports: [

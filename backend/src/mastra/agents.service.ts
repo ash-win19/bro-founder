@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { mastra, executeOrchestrator, AgentName } from './mastra.config';
-import { OrchestratorInput } from './orchestrator.agent';
+import { OrchestratorInput } from './agents/orchestrator.agent';
 
 @Injectable()
 export class AgentsService {
