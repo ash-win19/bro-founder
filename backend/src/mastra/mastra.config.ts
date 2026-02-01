@@ -4,6 +4,10 @@ import { generalAgent } from './agents/general.agent';
 import { businessAgent } from './agents/business.agent';
 import { mvpPlannerAgent } from './agents/mvp.agent';
 import { brainstormAgent } from './agents/brainstorm.agent';
+import { marketResearchAgent } from './agents/market.agents';
+import { devPlannerAgent } from './agents/devplanner.agent';
+import { overviewAgent } from './agents/overview.agent';
+import { pitchAgent } from './agents/pitch.agent';
 
 /**
  * Mastra Configuration
@@ -19,11 +23,10 @@ export const mastra = new Mastra({
     business: businessAgent,
     mvpPlanner: mvpPlannerAgent,
     brainstorm: brainstormAgent,
-    // Add more agents here as needed
-    // Example:
-    // dataAnalyst: dataAnalystAgent,
-    // codeReviewer: codeReviewerAgent,
-    // contentWriter: contentWriterAgent,
+    'market-research': marketResearchAgent,
+    devPlanner: devPlannerAgent,
+    overview: overviewAgent,
+    pitch: pitchAgent,
   },
 });
 
@@ -34,6 +37,10 @@ export const agents = {
   business: mastra.getAgent('business'),
   mvpPlanner: mastra.getAgent('mvpPlanner'),
   brainstorm: mastra.getAgent('brainstorm'),
+  'market-research': mastra.getAgent('market-research'),
+  devPlanner: mastra.getAgent('devPlanner'),
+  overview: mastra.getAgent('overview'),
+  pitch: mastra.getAgent('pitch'),
 };
 
 // Type for available agent names
@@ -42,9 +49,11 @@ export type AgentName =
   | 'general'
   | 'business'
   | 'mvpPlanner'
-  | 'brainstorm';
-// Add more agent names here as you create them
-// Example: export type AgentName = 'orchestrator' | 'dataAnalyst' | 'codeReviewer';
+  | 'brainstorm'
+  | 'market-research'
+  | 'devPlanner'
+  | 'overview'
+  | 'pitch';
 
 // Helper function to get any agent by name
 export function getAgent(name: AgentName) {

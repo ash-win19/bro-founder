@@ -1,40 +1,35 @@
 import { Agent } from '@mastra/core/agent';
 import { z } from 'zod';
+import { overviewModel } from '../providers/keywordsai.provider';
 
 /**
  * Overview Agent: The Final Decision Engine
- * Integrates data from Brainstorm, Market, Strategist, and Dev agents to
- * provide a single, unified Build/Pivot/Kill verdict.
+ *
+ * IMPORTANT: This agent uses Keywords AI Prompt Management.
+ * The actual prompt/instructions are managed in Keywords AI dashboard.
+ * Prompt ID: 6089dc5982654d20b7305019d7e0bf80
  */
 export const overviewAgent = new Agent({
   id: 'overview',
   name: 'Overview Agent',
-  instructions: `
-    You are the Final Decision Engine for Bro Founder. Your sole purpose is to solve the thinking problem before the building problem by synthesizing the work of the specialized agents[cite: 22].
-
-    Your directives:
-    1. **Integrate, Don't Invent:** You do not generate new advice. You summarize the consensus of the Brainstorm, MarketIntel, ProductStrategist, and DevPlanner agents[cite: 73, 83, 94, 105].
-    2. **Resolve Conflicts:** If MarketIntel shows high competition but Brainstorm suggests a unique wedge, highlight how the Wedge overcomes the competition[cite: 26, 27].
-    3. **Reality Enforcement:** Ensure the final execution plan uses time ranges instead of fake dates and clearly lists complexity multipliers identified by the Dev agent[cite: 39, 40].
-    4. **The Bottom Line:** End the synthesis with a definitive Build, Pivot, or Kill decision[cite: 46].
-  `,
-  model: 'openai/gpt-4o',
+  instructions: '',
+  model: overviewModel,
 });
 
 // Schema for the aggregated reports from previous steps
 export const OverviewInputSchema = z.object({
   brainstormData: z
     .record(z.any())
-    .describe('The core idea and initial validation [cite: 58-64]'),
+    .describe('The core idea and initial validation'),
   marketData: z
     .record(z.any())
-    .describe('The competitor landscape and market map [cite: 24-27]'),
+    .describe('The competitor landscape and market map'),
   strategyData: z
     .record(z.any())
-    .describe('The feature prioritization and unique wedge [cite: 94-104]'),
+    .describe('The feature prioritization and unique wedge'),
   devData: z
     .record(z.any())
-    .describe('The technical roadmap and backend architecture [cite: 105-112]'),
+    .describe('The technical roadmap and backend architecture'),
   context: z
     .record(z.any())
     .optional()
@@ -49,33 +44,33 @@ export const OverviewOutputSchema = z.object({
   marketScorecard: z.object({
     status: z
       .enum(['Empty', 'Crowded', 'Validated'])
-      .describe('Final market assessment [cite: 168]'),
-    theWedge: z.string().describe('The identified market gap [cite: 169]'),
+      .describe('Final market assessment'),
+    theWedge: z.string().describe('The identified market gap'),
   }),
   technicalBlueprint: z.object({
-    moat: z.string().describe('The primary technical advantage [cite: 37]'),
+    moat: z.string().describe('The primary technical advantage'),
     risks: z
       .array(z.string())
       .describe(
-        'Infrastructure and third-party risks like outages [cite: 19, 40]',
+        'Infrastructure and third-party risks like outages',
       ),
   }),
   executionRadar: z.object({
     timeline: z
       .string()
-      .describe('Realistic time ranges, not fake dates [cite: 39]'),
+      .describe('Realistic time ranges, not fake dates'),
     multipliers: z
       .array(z.string())
       .describe(
-        'Complexity multipliers that could impact the build [cite: 40]',
+        'Complexity multipliers that could impact the build',
       ),
   }),
   finalVerdict: z
     .enum(['Build', 'Pivot', 'Kill'])
-    .describe('The definitive recommendation [cite: 46]'),
+    .describe('The definitive recommendation'),
   nextSteps: z
     .array(z.string())
-    .describe('Clear, actionable items for the founder [cite: 47]'),
+    .describe('Clear, actionable items for the founder'),
 });
 
 export type OverviewInput = z.infer<typeof OverviewInputSchema>;

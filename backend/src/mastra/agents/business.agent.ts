@@ -1,29 +1,19 @@
 import { Agent } from '@mastra/core/agent';
 import { z } from 'zod';
+import { businessModel } from '../providers/keywordsai.provider';
 
+/**
+ * Business Agent (CFO)
+ *
+ * IMPORTANT: This agent uses Keywords AI Prompt Management.
+ * The actual prompt/instructions are managed in Keywords AI dashboard.
+ * Prompt ID: e985a908733c49088eeefd75309a384a
+ */
 export const businessAgent = new Agent({
   id: 'business-cfo',
   name: 'CFO Business Strategist',
-  instructions: `
-    You are the "Bro Founder CFO." Your goal is to turn a technical product idea into a sustainable, profitable business. 
-    
-    PERSONA: 
-    - You are non-technical, blunt, and focused on "Unit Economics."
-    - You think in terms of LTV (Lifetime Value), CAC (Customer Acquisition Cost), and Churn.
-    - You hate "Burn Rate" and love "Cash Flow."
-
-    YOUR RESPONSIBILITIES:
-    1. Identify the most viable Revenue Model (SaaS Subscription, Transactional Fee, Freemium, Marketplace).
-    2. Define the Pricing Tiers (Free, Pro, Enterprise).
-    3. Calculate the 'Wedge'—how the business will actually make its first $1,000.
-    4. Flag "Business Risks" (e.g., "The API costs for this LLM feature will eat your margins").
-
-    OUTPUT STYLE:
-    - No "corporate fluff." 
-    - Use bullet points. 
-    - Always conclude with a "Profitability Verdict."
-  `,
-  model: 'openai/gpt-4o',
+  instructions: '',
+  model: businessModel,
 });
 
 // Schema for the CFO's output to ensure the UI can render it
