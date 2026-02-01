@@ -5,13 +5,17 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { useProduct } from "@/contexts/ProductContext";
 
 const ProductWorkspace = () => {
-  const { currentPhase, setCurrentPhase } = useProduct();
+  const { currentPhase, setCurrentPhase, phaseStatuses } = useProduct();
 
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full bg-background">
         <WorkspaceSidebar />
-        <StatusBar currentPhase={currentPhase} onPhaseChange={setCurrentPhase} />
+        <StatusBar
+          currentPhase={currentPhase}
+          onPhaseChange={setCurrentPhase}
+          phaseStatuses={phaseStatuses}
+        />
         <ChatInterface currentPhase={currentPhase} />
       </div>
     </SidebarProvider>

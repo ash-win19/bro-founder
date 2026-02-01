@@ -44,7 +44,12 @@ const OverviewButton = ({ isPhaseComplete }: OverviewButtonProps) => {
       </TooltipTrigger>
       {!isPhaseComplete && (
         <TooltipContent side="bottom" className="font-mono text-xs">
-          Finish discussion to unlock overview
+          Complete brainstorm phase to unlock overview
+        </TooltipContent>
+      )}
+      {isPhaseComplete && (
+        <TooltipContent side="bottom" className="font-mono text-xs">
+          View your product overview
         </TooltipContent>
       )}
     </Tooltip>
