@@ -1,78 +1,63 @@
-# Bro Founder Monorepo
+# Bro Founder
 
-Monorepo with Next.js (frontend) and FastAPI (backend).
+Bro Founder is a full-stack "AI co-founder" app. The React UI guides users through idea validation, market research, business strategy, MVP planning, dev planning, and pitch creation. The backend is a NestJS API that exposes Mastra-powered agent endpoints, with optional KeywordsAI prompt management.
 
-## Structure
+## Project structure
+- backend/ NestJS API + Mastra agents
+- frontend/ Vite + React + TypeScript UI (Tailwind + shadcn-ui)
 
-```
-bro-founder/
-├── .github/
-│   └── workflows/
-│       └── ci.yml
-├── frontend/               # Next.js (App Router)
-│   ├── app/
-│   ├── public/
-│   ├── next.config.js
-│   ├── tailwind.config.js
-│   ├── postcss.config.js
-│   ├── package.json
-│   └── tsconfig.json
-├── backend/                # FastAPI
-│   ├── api/
-│   │   └── v1/
-│   ├── core/
-│   ├── models/
-│   ├── schemas/
-│   ├── main.py
-│   ├── requirements.txt
-│   └── database.py
-├── .gitignore
-└── README.md
+## Requirements
+- Node.js 18+ and npm
+
+## Local development
+Backend:
+```bash
+cd backend
+npm install
+npm run start:dev
 ```
 
-## Getting Started
+Frontend:
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-### Prerequisites
+Defaults:
+- Backend: http://localhost:3000
+- Frontend: http://localhost:8080
 
-- Node.js 18+ (or 20+)
-- Python 3.11+
+## Environment variables
+backend/.env
+- KEYWORDSAI_API_KEY=... (required for managed prompts)
+- KEYWORDSAI_BASE_URL=... (optional, defaults to https://api.keywordsai.co)
+- PORT=3000 (optional)
 
-### Frontend (Next.js)
+frontend/.env
+- VITE_API_URL=http://localhost:3000
 
-1. Install dependencies:
-   - `cd frontend`
-   - `npm install`
-2. Run dev server:
-   - `npm run dev`
-3. Open: `http://localhost:3000`
+## API overview
+- GET /agents/list
+- POST /agents/orchestrator (body: { task, context? })
+- POST /agents/general (body: { question, context? })
+- POST /agents/prompts/run (body: { promptId, variables? })
+- POST /agents/prompts/market-research
+- POST /agents/:agentName (orchestrator, general, business, mvpPlanner, brainstorm, market-research)
 
-Tailwind is preconfigured (see `frontend/tailwind.config.js`, `frontend/postcss.config.js`, and `frontend/app/globals.css`).
+## Build
+Backend:
+```bash
+cd backend
+npm run build
+npm run start:prod
+```
 
-### Backend (FastAPI)
+Frontend:
+```bash
+cd frontend
+npm run build
+```
 
-1. Create a virtualenv and install deps:
-   - `cd backend`
-   - `python -m venv .venv`
-   - `source .venv/bin/activate` (Windows: `.\.venv\Scripts\activate`)
-   - `pip install -r requirements.txt`
-2. Run API locally:
-   - `uvicorn main:app --reload`
-3. Endpoints:
-   - Health: `GET http://localhost:8000/health`
-   - Ping (v1): `GET http://localhost:8000/api/v1/ping`
-
-Default CORS allows the Next.js dev server at `http://localhost:3000`.
-
-### Environment
-
-- Database URL (optional): set `DATABASE_URL` (defaults to `sqlite:///./app.db`).
-
-## CI
-
-GitHub Actions workflow (`.github/workflows/ci.yml`) builds the frontend and verifies the backend imports on pushes and PRs.
-
-## Notes
-
-- This is a minimal scaffold. Add models, schemas, and routes under `backend/` as your API grows.
-- In the frontend, add components under `frontend/components/` and pages in `frontend/app/`.
-
+Production build output:
+- frontend/dist
