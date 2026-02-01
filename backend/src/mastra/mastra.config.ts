@@ -1,6 +1,7 @@
 import { Mastra } from '@mastra/core';
 import { orchestratorAgent } from './agents/orchestrator.agent';
 import { businessAgent } from './agents/business.agent';
+import { mvpPlannerAgent } from './agents/mvp.agent';
 
 /**
  * Mastra Configuration
@@ -13,6 +14,7 @@ export const mastra = new Mastra({
   agents: {
     orchestrator: orchestratorAgent,
     business: businessAgent,
+    mvpPlanner: mvpPlannerAgent,
     // Add more agents here as needed
     // Example:
     // dataAnalyst: dataAnalystAgent,
@@ -29,6 +31,11 @@ export const agents = {
 
 // Type for available agent names
 export type AgentName = 'orchestrator' | 'business';
+  mvpPlanner: mastra.getAgent('mvpPlanner'),
+};
+
+// Type for available agent names
+export type AgentName = 'orchestrator' | 'mvpPlanner';
 // Add more agent names here as you create them
 // Example: export type AgentName = 'orchestrator' | 'dataAnalyst' | 'codeReviewer';
 
