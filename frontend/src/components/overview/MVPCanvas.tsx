@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { X, Sparkles, Users, DollarSign, Receipt, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useProduct } from "@/contexts/ProductContext";
 
 interface MVPSection {
   id: string;
@@ -14,73 +15,10 @@ interface MVPSection {
   content: string[];
 }
 
-const mvpSections: MVPSection[] = [
-  {
-    id: "value",
-    label: "Value Proposition",
-    icon: <Sparkles className="w-5 h-5" />,
-    color: "hsl(45 100% 60%)",
-    value: 1,
-    content: [
-      "Opinionated Build/Pivot/Kill decisions",
-      "Technical depth with backend architecture",
-      "Execution realism with risk flags",
-      "Explicit uncertainty quantification",
-    ],
-  },
-  {
-    id: "segments",
-    label: "Customer Segments",
-    icon: <Users className="w-5 h-5" />,
-    color: "hsl(280 80% 60%)",
-    value: 1,
-    content: [
-      "Pre-seed to early seed founders",
-      "Technical enough to understand trade-offs",
-      "First-time founders seeking validation",
-    ],
-  },
-  {
-    id: "revenue",
-    label: "Revenue Streams",
-    icon: <DollarSign className="w-5 h-5" />,
-    color: "hsl(150 80% 45%)",
-    value: 1,
-    content: [
-      "Subscription: $299/month for founders",
-      "Success fee: 2% of capital raised",
-      "Enterprise licensing: Custom pricing",
-    ],
-  },
-  {
-    id: "cost",
-    label: "Cost Structure",
-    icon: <Receipt className="w-5 h-5" />,
-    color: "hsl(0 75% 55%)",
-    value: 1,
-    content: [
-      "AI/ML inference costs (variable)",
-      "Cloud infrastructure (scalable)",
-      "Engineering team salaries (fixed)",
-    ],
-  },
-  {
-    id: "goals",
-    label: "Goals",
-    icon: <Target className="w-5 h-5" />,
-    color: "hsl(187 100% 50%)",
-    value: 1,
-    content: [
-      "Validate 100 startup ideas in first quarter",
-      "Achieve product-market fit signal",
-      "Build community of 1,000 active founders",
-      "Secure seed funding within 6 months",
-    ],
-  },
-];
-
 // Custom label component to render icons on the pie chart
-const renderCustomizedLabel = ({
+const renderCustomizedLabel = (
+  sections: MVPSection[]
+) => ({
   cx,
   cy,
   midAngle,
@@ -100,7 +38,7 @@ const renderCustomizedLabel = ({
   const x = cx + radius * Math.cos(-midAngle * RADIAN);
   const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
-  const section = mvpSections[index];
+  const section = sections[index];
 
   return (
     <foreignObject
@@ -118,8 +56,73 @@ const renderCustomizedLabel = ({
 };
 
 const MVPCanvas = () => {
+  const { productData, overviewData } = useProduct();
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  const [sections, setSections] = useState<MVPSection[]>(mvpSections);
+
+  // Generate sections dynamically from productData and overviewData
+  const sections = useMemo<MVPSection[]>(() => {
+    return [
+      {
+        id: "value",
+        label: "Value Proposition",
+        icon: <Sparkles className="w-5 h-5" />,
+        color: "hsl(45 100% 60%)",
+        value: 1,
+        content: overviewData?.keyFeatures || productData.coreFeatures || [
+          "Define your core features",
+          "What makes your product unique?",
+        ],
+      },
+      {
+        id: "segments",
+        label: "Customer Segments",
+        icon: <Users className="w-5 h-5" />,
+        color: "hsl(280 80% 60%)",
+        value: 1,
+        content: [
+          overviewData?.targetMarket || productData.targetUsers || "Target customers to be defined",
+        ],
+      },
+      {
+        id: "revenue",
+        label: "Revenue Streams",
+        icon: <DollarSign className="w-5 h-5" />,
+        color: "hsl(150 80% 45%)",
+        value: 1,
+        content: [
+          overviewData?.businessModelSummary || productData.revenueModel || "Revenue model to be defined",
+          productData.pricing ? `Pricing: ${productData.pricing}` : "Pricing to be determined",
+        ],
+      },
+      {
+        id: "cost",
+        label: "Cost Structure",
+        icon: <Receipt className="w-5 h-5" />,
+        color: "hsl(0 75% 55%)",
+        value: 1,
+        content: productData.techStack.length > 0
+          ? productData.techStack.map(tech => `${tech} infrastructure`)
+          : ["Infrastructure costs (variable)", "Development costs (fixed)"],
+      },
+      {
+        id: "goals",
+        label: "Goals",
+        icon: <Target className="w-5 h-5" />,
+        color: "hsl(187 100% 50%)",
+        value: 1,
+        content: productData.timeline
+          ? [`Timeline: ${productData.timeline}`, "Launch MVP", "Achieve product-market fit"]
+          : ["Define MVP timeline", "Set measurable goals"],
+      },
+    ];
+  }, [productData, overviewData]);
+
+  const [editableSections, setEditableSections] = useState<MVPSection[]>(sections);
+
+  // Sync editableSections when sections change (when productData updates)
+  useEffect(() => {
+    setEditableSections(sections);
+  }, [sections]);
 
   const handleSectionClick = (sectionId: string) => {
     if (expandedSection === sectionId) {
@@ -130,7 +133,7 @@ const MVPCanvas = () => {
   };
 
   const handleContentEdit = (sectionId: string, index: number, newValue: string) => {
-    setSections((prev) =>
+    setEditableSections((prev) =>
       prev.map((s) =>
         s.id === sectionId
           ? { ...s, content: s.content.map((c, i) => (i === index ? newValue : c)) }
@@ -139,7 +142,7 @@ const MVPCanvas = () => {
     );
   };
 
-  const expandedData = sections.find((s) => s.id === expandedSection);
+  const expandedData = editableSections.find((s) => s.id === expandedSection);
 
   return (
     <motion.div
@@ -163,19 +166,19 @@ const MVPCanvas = () => {
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
-              data={sections}
+              data={editableSections}
               dataKey="value"
               cx="50%"
               cy="50%"
               innerRadius={60}
               outerRadius={130}
               paddingAngle={3}
-              onClick={(_, index) => handleSectionClick(sections[index].id)}
-              label={renderCustomizedLabel}
+              onClick={(_, index) => handleSectionClick(editableSections[index].id)}
+              label={renderCustomizedLabel(editableSections)}
               labelLine={false}
               isAnimationActive={false}
             >
-              {sections.map((section) => (
+              {editableSections.map((section) => (
                 <Cell
                   key={section.id}
                   fill={section.color}

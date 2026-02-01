@@ -20,9 +20,13 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^3.0.25",
+    "@ai-sdk/provider": "^3.0.7",
+    "@keywordsai/exporter-vercel": "^1.0.27",
     "@langchain/core": "^1.1.18",
     "@langchain/openai": "^1.2.4",
     "@mastra/core": "^1.1.0",
+    "@mastra/observability": "^1.1.0",
     "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",

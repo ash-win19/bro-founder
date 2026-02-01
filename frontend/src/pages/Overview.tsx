@@ -1,8 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, FileText } from "lucide-react";
+import { ArrowRight, FileText, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useProduct } from "@/contexts/ProductContext";
+import { generateOverview } from "@/lib/api";
+import { useEffect } from "react";
 import OverviewHero from "@/components/overview/OverviewHero";
 import ProductContextColumn from "@/components/overview/ProductContextColumn";
 import MVPCanvas from "@/components/overview/MVPCanvas";
@@ -33,18 +35,71 @@ const EmptyState = () => {
   );
 };
 
+const LoadingState = () => {
+  return (
+    <motion.div
+      className="flex flex-col items-center justify-center min-h-[60vh] text-center px-8"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+      </div>
+      <h2 className="text-xl font-semibold text-foreground mb-2">Generating Your Overview</h2>
+      <p className="text-sm text-muted-foreground max-w-md">
+        Our AI is analyzing your product data and creating a comprehensive overview...
+      </p>
+    </motion.div>
+  );
+};
+
 const Overview = () => {
   const navigate = useNavigate();
-  const { productData, hasData } = useProduct();
+  const {
+    productData,
+    hasData,
+    overviewData,
+    setOverviewData,
+    isGeneratingOverview,
+    setIsGeneratingOverview,
+  } = useProduct();
 
   const displayName = productData.name || "Your Startup";
-  const displayTagline = productData.tagline || "Define your product in the workspace";
-  const displayMarketSize = productData.marketSize || "To be determined";
+  const displayTagline = productData.tagline || overviewData?.executiveSummary || "Define your product in the workspace";
+  const displayMarketSize = productData.marketSize || overviewData?.marketInsights || "To be determined";
+
+  // Generate overview when component mounts and we have data
+  useEffect(() => {
+    const fetchOverview = async () => {
+      if (hasData && !overviewData && !isGeneratingOverview) {
+        setIsGeneratingOverview(true);
+        try {
+          const overview = await generateOverview(productData);
+          setOverviewData(overview);
+        } catch (error) {
+          console.error('Error generating overview:', error);
+        } finally {
+          setIsGeneratingOverview(false);
+        }
+      }
+    };
+
+    fetchOverview();
+  }, [hasData, overviewData, isGeneratingOverview, productData, setOverviewData, setIsGeneratingOverview]);
 
   if (!hasData) {
     return (
       <div className="min-h-screen bg-background">
         <EmptyState />
+      </div>
+    );
+  }
+
+  if (isGeneratingOverview) {
+    return (
+      <div className="min-h-screen bg-background">
+        <LoadingState />
       </div>
     );
   }

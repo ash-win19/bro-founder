@@ -24,6 +24,30 @@ export class AgentsController {
     return this.agentsService.executeOrchestratorTask(input);
   }
 
+  @Post('prompts/run')
+  async runManagedPrompt(
+    @Body() body: { promptId: string; variables?: Record<string, string> },
+  ) {
+    this.logger.log('POST /agents/prompts/run');
+
+    if (!body.promptId) {
+      throw new BadRequestException('promptId is required');
+    }
+
+    return this.agentsService.runManagedPrompt(
+      body.promptId,
+      body.variables ?? {},
+    );
+  }
+
+  @Post('prompts/market-research')
+  async runMarketResearchPrompt(
+    @Body() body: { variables?: Record<string, string> },
+  ) {
+    this.logger.log('POST /agents/prompts/market-research');
+    return this.agentsService.runMarketResearchWithPrompt(body.variables ?? {});
+  }
+
   @Post('general')
   async executeGeneral(@Body() input: GeneralInput) {
     this.logger.log('POST /agents/general');
@@ -43,6 +67,8 @@ export class AgentsController {
       'general',
       'business',
       'mvpPlanner',
+      'brainstorm',
+      'market-research',
     ];
     if (!validAgents.includes(agentName as AgentName)) {
       throw new BadRequestException(
@@ -62,6 +88,11 @@ export class AgentsController {
           name: 'orchestrator',
           description:
             'Main coordinator agent for breaking down and managing complex tasks',
+        },
+        {
+          name: 'market-research',
+          description:
+            'Analyzes startup ideas and generates structured market insights',
         },
         {
           name: 'general',
