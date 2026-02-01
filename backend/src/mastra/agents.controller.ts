@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Logger, Get, Param, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Logger,
+  Get,
+  Param,
+  BadRequestException,
+} from '@nestjs/common';
 import { AgentsService } from './agents.service';
 import { OrchestratorInput } from './agents/orchestrator.agent';
 import { GeneralInput } from './agents/general.agent';
@@ -8,7 +16,7 @@ import { AgentName } from './mastra.config';
 export class AgentsController {
   private readonly logger = new Logger(AgentsController.name);
 
-  constructor(private readonly agentsService: AgentsService) { }
+  constructor(private readonly agentsService: AgentsService) {}
 
   @Post('orchestrator')
   async executeOrchestrator(@Body() input: OrchestratorInput) {
@@ -30,9 +38,16 @@ export class AgentsController {
     this.logger.log(`POST /agents/${agentName}`);
 
     // Validate that agentName is a valid AgentName
-    const validAgents: AgentName[] = ['orchestrator', 'general', 'business', 'mvpPlanner'];
+    const validAgents: AgentName[] = [
+      'orchestrator',
+      'general',
+      'business',
+      'mvpPlanner',
+    ];
     if (!validAgents.includes(agentName as AgentName)) {
-      throw new BadRequestException(`Invalid agent name: ${agentName}. Valid agents: ${validAgents.join(', ')}`);
+      throw new BadRequestException(
+        `Invalid agent name: ${agentName}. Valid agents: ${validAgents.join(', ')}`,
+      );
     }
 
     return this.agentsService.executeAgent(agentName as AgentName, body.input);
@@ -60,7 +75,8 @@ export class AgentsController {
         },
         {
           name: 'mvpPlanner',
-          description: 'Pragmatic technical co-founder that translates product ideas into actionable MVP roadmaps',
+          description:
+            'Pragmatic technical co-founder that translates product ideas into actionable MVP roadmaps',
         },
       ],
     };

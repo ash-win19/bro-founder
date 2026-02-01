@@ -3,6 +3,7 @@ import { orchestratorAgent } from './agents/orchestrator.agent';
 import { generalAgent } from './agents/general.agent';
 import { businessAgent } from './agents/business.agent';
 import { mvpPlannerAgent } from './agents/mvp.agent';
+import { brainstormAgent } from './agents/brainstorm.agent';
 
 /**
  * Mastra Configuration
@@ -17,6 +18,7 @@ export const mastra = new Mastra({
     general: generalAgent,
     business: businessAgent,
     mvpPlanner: mvpPlannerAgent,
+    brainstorm: brainstormAgent,
     // Add more agents here as needed
     // Example:
     // dataAnalyst: dataAnalystAgent,
@@ -31,10 +33,16 @@ export const agents = {
   general: mastra.getAgent('general'),
   business: mastra.getAgent('business'),
   mvpPlanner: mastra.getAgent('mvpPlanner'),
+  brainstorm: mastra.getAgent('brainstorm'),
 };
 
 // Type for available agent names
-export type AgentName = 'orchestrator' | 'general' | 'business' | 'mvpPlanner';
+export type AgentName =
+  | 'orchestrator'
+  | 'general'
+  | 'business'
+  | 'mvpPlanner'
+  | 'brainstorm';
 // Add more agent names here as you create them
 // Example: export type AgentName = 'orchestrator' | 'dataAnalyst' | 'codeReviewer';
 
@@ -53,9 +61,30 @@ export async function executeOrchestrator(input: {
   const agent = mastra.getAgent('orchestrator');
 
   // Format the input as a user message with context
-  const messages = [
-    { role: 'user' as const, content: input.task },
-  ];
+  const messages = [{ role: 'user' as const, content: input.task }];
+
+  // Add context as additional messages if provided
+  if (input.context) {
+    messages.push({
+      role: 'user' as const,
+      content: `Additional context: ${JSON.stringify(input.context)}`,
+    });
+  }
+
+  return await agent.generate(messages);
+}
+
+// Helper function to execute brainstorm agent
+export async function executeBrainstorm(input: {
+  idea: string;
+  context?: Record<string, any>;
+  userId?: string;
+  sessionId?: string;
+}) {
+  const agent = mastra.getAgent('brainstorm');
+
+  // Format the input as a user message with context
+  const messages = [{ role: 'user' as const, content: input.idea }];
 
   // Add context as additional messages if provided
   if (input.context) {
@@ -78,9 +107,7 @@ export async function executeGeneral(input: {
   const agent = mastra.getAgent('general');
 
   // Format the input as a user message with context
-  const messages = [
-    { role: 'user' as const, content: input.question },
-  ];
+  const messages = [{ role: 'user' as const, content: input.question }];
 
   // Add context as additional messages if provided
   if (input.context) {
@@ -103,9 +130,7 @@ export async function executeBusiness(input: {
   const agent = mastra.getAgent('business');
 
   // Format the input as a user message with context
-  const messages = [
-    { role: 'user' as const, content: input.question },
-  ];
+  const messages = [{ role: 'user' as const, content: input.question }];
 
   // Add context as additional messages if provided
   if (input.context) {
@@ -128,9 +153,7 @@ export async function executeMvpPlanner(input: {
   const agent = mastra.getAgent('mvpPlanner');
 
   // Format the input as a user message with context
-  const messages = [
-    { role: 'user' as const, content: input.idea },
-  ];
+  const messages = [{ role: 'user' as const, content: input.idea }];
 
   // Add context as additional messages if provided
   if (input.context) {

@@ -1,11 +1,12 @@
-import { Agent } from "@mastra/core/agent";
+import { Agent } from '@mastra/core/agent';
 import { z } from 'zod';
 
 export const orchestratorAgent = new Agent({
-  id: "orchestrator",
-  name: "Orchestrator Agent",
-  instructions: "You are an intelligent orchestrator agent designed to coordinate and manage complex tasks. Break down user requests into manageable subtasks, coordinate execution, and synthesize results into coherent responses.",
-  model: "openai/gpt-4o",
+  id: 'orchestrator',
+  name: 'Orchestrator Agent',
+  instructions:
+    'You are an intelligent orchestrator agent designed to coordinate and manage complex tasks. Break down user requests into manageable subtasks, coordinate execution, and synthesize results into coherent responses.',
+  model: 'openai/gpt-4o',
 });
 
 // Schema for orchestrator input

@@ -1,11 +1,12 @@
-import { Agent } from "@mastra/core/agent";
+import { Agent } from '@mastra/core/agent';
 import { z } from 'zod';
 
 export const generalAgent = new Agent({
-  id: "general",
-  name: "General Assistant",
-  instructions: "You are a helpful general-purpose assistant. Answer questions clearly, provide accurate information, and assist users with a wide range of topics. Be concise, friendly, and informative.",
-  model: "openai/gpt-4o",
+  id: 'general',
+  name: 'General Assistant',
+  instructions:
+    'You are a helpful general-purpose assistant. Answer questions clearly, provide accurate information, and assist users with a wide range of topics. Be concise, friendly, and informative.',
+  model: 'openai/gpt-4o',
 });
 
 // Schema for general agent input
@@ -21,7 +22,7 @@ export const GeneralInputSchema = z.object({
 
 // Schema for general agent output
 export const GeneralOutputSchema = z.object({
-  answer: z.string().describe('The answer to the user\'s question'),
+  answer: z.string().describe("The answer to the user's question"),
   sources: z
     .array(z.string())
     .optional()

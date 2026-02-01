@@ -1,4 +1,4 @@
-import { Agent } from "@mastra/core/agent";
+import { Agent } from '@mastra/core/agent';
 import { z } from 'zod';
 
 // PART 4: ADDITIONAL INSTRUCTIONS & HELPER TYPES
@@ -41,11 +41,11 @@ export const COMMUNICATION_STYLE = {
     good: [
       'Build X using Y because Z (specific recommendation with reasoning)',
       'This will take 2-3 weeks because [dependency] (time estimate with explanation)',
-      'Cut [feature], it\'s not needed to prove value prop (ruthless prioritization)',
+      "Cut [feature], it's not needed to prove value prop (ruthless prioritization)",
     ],
     bad: [
       'You could build X or Y, depends on your goals (too open-ended)',
-      'It shouldn\'t take too long (vague, unhelpful)',
+      "It shouldn't take too long (vague, unhelpful)",
     ],
   },
   action_bias: 'Every response ends with "Next step: [concrete action]"',
@@ -54,11 +54,11 @@ export const COMMUNICATION_STYLE = {
 // Response to common founder pushback
 export const PUSHBACK_RESPONSES = {
   complex_feature_request: `That's a great v2 feature. For MVP, we need to validate [core assumption] first. If users love the basic version, we'll add [feature] in the next iteration.`,
-  
+
   competitive_concerns: `You don't out-feature them in MVP. You win by being 10x better at [niche use case]. Focus on [specific wedge], ignore everything else they do.`,
-  
+
   unrealistic_timeline: `If we cut [X, Y, Z] and you work full-time, maybe. More realistic: 4-6 weeks part-time. Here's the breakdown: [specific timeline].`,
-  
+
   trendy_tech_request: `For MVP, stick with proven tools. [Trendy tech] adds risk and learning curve. If you ship fast with boring tech, you can always refactor later.`,
 };
 
@@ -68,19 +68,22 @@ export const AGENT_SUCCESS_METRICS = {
     'Founders can start coding within 24 hours of your recommendation',
     'Timeline estimates are within ±20% of actual delivery',
     'MVP scope is small enough to ship in <8 weeks',
-    'Founders avoid building features they don\'t need',
+    "Founders avoid building features they don't need",
     'Projects maintain momentum (no "stuck" periods >1 week)',
   ],
   not_doing_well: [
     'Founders feel overwhelmed by your plan',
     'Timelines are consistently wrong by 2x+',
     'MVP scope is too ambitious (>10 core features)',
-    'Founders don\'t know what to do next after your response',
+    "Founders don't know what to do next after your response",
   ],
 };
 
 // Helper function to validate MVP scope
-export const validateMVPScope = (steps: number, timelineWeeks: number): {
+export const validateMVPScope = (
+  steps: number,
+  timelineWeeks: number,
+): {
   isValid: boolean;
   warnings: string[];
 } => {
@@ -269,20 +272,35 @@ const MVPStepSchema = z.object({
   step_number: z.number().describe('Sequential step number'),
   title: z.string().describe('Action-oriented step title'),
   description: z.string().describe('What exactly needs to be done'),
-  deliverable: z.string().describe('Tangible output (e.g., "Working login page")'),
-  estimated_time: z.string().describe('Time estimate as range (e.g., "2-3 days")'),
-  dependencies: z.array(z.string()).describe('What must be done before this step'),
+  deliverable: z
+    .string()
+    .describe('Tangible output (e.g., "Working login page")'),
+  estimated_time: z
+    .string()
+    .describe('Time estimate as range (e.g., "2-3 days")'),
+  dependencies: z
+    .array(z.string())
+    .describe('What must be done before this step'),
   risk_level: z.enum(['Low', 'Medium', 'High']).describe('Risk assessment'),
-  risk_notes: z.string().optional().describe('Why this might take longer or fail'),
+  risk_notes: z
+    .string()
+    .optional()
+    .describe('Why this might take longer or fail'),
 });
 
 // Schema for Timeline
 const TimelineSchema = z.object({
-  mvp_ready: z.string().describe('Time range for MVP completion (e.g., "4-6 weeks")'),
+  mvp_ready: z
+    .string()
+    .describe('Time range for MVP completion (e.g., "4-6 weeks")'),
   first_user_test: z.string().describe('When first users can test'),
   beta_launch: z.string().describe('When beta launch can happen'),
-  assumptions: z.array(z.string()).describe('Key assumptions about team, time, tools'),
-  risk_multipliers: z.array(z.string()).describe('Factors that could extend timeline'),
+  assumptions: z
+    .array(z.string())
+    .describe('Key assumptions about team, time, tools'),
+  risk_multipliers: z
+    .array(z.string())
+    .describe('Factors that could extend timeline'),
 });
 
 // Schema for Tech Stack Recommendation
@@ -317,15 +335,34 @@ const KillCriteriaSchema = z.object({
 // Input Schema
 export const MVPPlannerInputSchema = z.object({
   product_name: z.string().describe('Name of the product/startup'),
-  product_description: z.string().describe('Detailed description of what the product does'),
+  product_description: z
+    .string()
+    .describe('Detailed description of what the product does'),
   target_users: z.string().describe('Who the target users are'),
   core_problem: z.string().describe('The main problem being solved'),
-  existing_competitors: z.array(z.string()).optional().describe('Known competitors'),
-  team_size: z.number().optional().default(1).describe('Number of developers on team'),
-  hours_per_week: z.number().optional().default(20).describe('Hours available per week'),
-  technical_skills: z.array(z.string()).optional().describe('Team technical skills'),
+  existing_competitors: z
+    .array(z.string())
+    .optional()
+    .describe('Known competitors'),
+  team_size: z
+    .number()
+    .optional()
+    .default(1)
+    .describe('Number of developers on team'),
+  hours_per_week: z
+    .number()
+    .optional()
+    .default(20)
+    .describe('Hours available per week'),
+  technical_skills: z
+    .array(z.string())
+    .optional()
+    .describe('Team technical skills'),
   budget_constraints: z.string().optional().describe('Any budget limitations'),
-  deadline_pressure: z.string().optional().describe('Any specific deadline requirements'),
+  deadline_pressure: z
+    .string()
+    .optional()
+    .describe('Any specific deadline requirements'),
   userId: z.string().optional().describe('User identifier for tracking'),
   sessionId: z.string().optional().describe('Session identifier for context'),
 });
@@ -335,64 +372,112 @@ export type MVPPlannerInput = z.infer<typeof MVPPlannerInputSchema>;
 // PART 3: OUTPUT SCHEMA
 
 export const MVPPlannerOutputSchema = z.object({
-  mvp_definition: z.object({
-    core_feature: z.string().describe('The ONE thing this MVP must do'),
-    success_metric: z.string().describe('How we know it\'s working (specific, measurable)'),
-    what_we_are_NOT_building: z.array(z.string()).describe('Features/scope explicitly cut from MVP'),
-  }).describe('Clear definition of the minimum viable product'),
-  
-  immediate_first_steps: z.array(MVPStepSchema)
+  mvp_definition: z
+    .object({
+      core_feature: z.string().describe('The ONE thing this MVP must do'),
+      success_metric: z
+        .string()
+        .describe("How we know it's working (specific, measurable)"),
+      what_we_are_NOT_building: z
+        .array(z.string())
+        .describe('Features/scope explicitly cut from MVP'),
+    })
+    .describe('Clear definition of the minimum viable product'),
+
+  immediate_first_steps: z
+    .array(MVPStepSchema)
     .min(5)
     .max(10)
     .describe('5-10 actionable first steps to start building'),
-  
-  timeline: TimelineSchema.describe('Realistic timeline with assumptions and risks'),
-  
-  tech_stack_recommendations: TechStackSchema.describe('Recommended technology stack'),
-  
-  mvp_canvas: MVPCanvasSchema.optional().describe('Business model canvas for the MVP'),
-  
-  momentum_checklist: z.object({
-    week_1: z.array(z.string()).describe('Milestones for week 1'),
-    week_2: z.array(z.string()).describe('Milestones for week 2'),
-    week_3_4: z.array(z.string()).describe('Milestones for weeks 3-4'),
-    week_5_6: z.array(z.string()).optional().describe('Milestones for weeks 5-6 if needed'),
-  }).describe('Week-by-week momentum checklist'),
-  
-  kill_criteria: KillCriteriaSchema.describe('Clear signals for when to kill or pivot'),
-  
-  parallel_workstreams: z.array(z.object({
-    stream_name: z.string(),
-    tasks: z.array(z.string()),
-    can_start: z.string().describe('When this can start (e.g., "Week 1" or "After Step 3")'),
-  })).optional().describe('Tasks that can be done in parallel'),
-  
-  risk_assessment: z.object({
-    technical_risks: z.array(z.object({
-      risk: z.string(),
-      severity: z.enum(['Low', 'Medium', 'High']),
-      mitigation: z.string(),
-    })),
-    market_risks: z.array(z.object({
-      risk: z.string(),
-      severity: z.enum(['Low', 'Medium', 'High']),
-      mitigation: z.string(),
-    })),
-    execution_risks: z.array(z.object({
-      risk: z.string(),
-      severity: z.enum(['Low', 'Medium', 'High']),
-      mitigation: z.string(),
-    })),
-  }).optional().describe('Comprehensive risk assessment'),
-  
-  next_immediate_action: z.string().describe('The very next thing the founder should do (within 24 hours)'),
-  
-  metadata: z.object({
-    estimated_total_hours: z.number().optional().describe('Estimated total hours to MVP'),
-    estimated_cost: z.string().optional().describe('Estimated cost if any'),
-    confidence_level: z.enum(['Low', 'Medium', 'High']).describe('Confidence in timeline estimate'),
-    key_assumptions: z.array(z.string()).describe('Critical assumptions this plan depends on'),
-  }).optional().describe('Additional metadata about the plan'),
+
+  timeline: TimelineSchema.describe(
+    'Realistic timeline with assumptions and risks',
+  ),
+
+  tech_stack_recommendations: TechStackSchema.describe(
+    'Recommended technology stack',
+  ),
+
+  mvp_canvas: MVPCanvasSchema.optional().describe(
+    'Business model canvas for the MVP',
+  ),
+
+  momentum_checklist: z
+    .object({
+      week_1: z.array(z.string()).describe('Milestones for week 1'),
+      week_2: z.array(z.string()).describe('Milestones for week 2'),
+      week_3_4: z.array(z.string()).describe('Milestones for weeks 3-4'),
+      week_5_6: z
+        .array(z.string())
+        .optional()
+        .describe('Milestones for weeks 5-6 if needed'),
+    })
+    .describe('Week-by-week momentum checklist'),
+
+  kill_criteria: KillCriteriaSchema.describe(
+    'Clear signals for when to kill or pivot',
+  ),
+
+  parallel_workstreams: z
+    .array(
+      z.object({
+        stream_name: z.string(),
+        tasks: z.array(z.string()),
+        can_start: z
+          .string()
+          .describe('When this can start (e.g., "Week 1" or "After Step 3")'),
+      }),
+    )
+    .optional()
+    .describe('Tasks that can be done in parallel'),
+
+  risk_assessment: z
+    .object({
+      technical_risks: z.array(
+        z.object({
+          risk: z.string(),
+          severity: z.enum(['Low', 'Medium', 'High']),
+          mitigation: z.string(),
+        }),
+      ),
+      market_risks: z.array(
+        z.object({
+          risk: z.string(),
+          severity: z.enum(['Low', 'Medium', 'High']),
+          mitigation: z.string(),
+        }),
+      ),
+      execution_risks: z.array(
+        z.object({
+          risk: z.string(),
+          severity: z.enum(['Low', 'Medium', 'High']),
+          mitigation: z.string(),
+        }),
+      ),
+    })
+    .optional()
+    .describe('Comprehensive risk assessment'),
+
+  next_immediate_action: z
+    .string()
+    .describe('The very next thing the founder should do (within 24 hours)'),
+
+  metadata: z
+    .object({
+      estimated_total_hours: z
+        .number()
+        .optional()
+        .describe('Estimated total hours to MVP'),
+      estimated_cost: z.string().optional().describe('Estimated cost if any'),
+      confidence_level: z
+        .enum(['Low', 'Medium', 'High'])
+        .describe('Confidence in timeline estimate'),
+      key_assumptions: z
+        .array(z.string())
+        .describe('Critical assumptions this plan depends on'),
+    })
+    .optional()
+    .describe('Additional metadata about the plan'),
 });
 
 export type MVPPlannerOutput = z.infer<typeof MVPPlannerOutputSchema>;
@@ -400,8 +485,8 @@ export type MVPPlannerOutput = z.infer<typeof MVPPlannerOutputSchema>;
 // PART 1: AGENT DEFINITION & CORE INSTRUCTIONS
 
 export const mvpPlannerAgent = new Agent({
-  id: "mvp-planner",
-  name: "MVP Planner Agent",
+  id: 'mvp-planner',
+  name: 'MVP Planner Agent',
   instructions: `You are the MVP Planner Agent for Bro Founder, an AI technical co-founder system. Your job is to translate validated product ideas into actionable, realistic MVP roadmaps that founders can start building immediately.
 
 ## YOUR CORE ROLE 
@@ -525,7 +610,9 @@ You MUST structure your response as a JSON object with the following schema:
 \`\`\`
 
 ## STRATEGIES BY PRODUCT TYPE
-${Object.entries(PRODUCT_TYPE_STRATEGIES).map(([k, v]) => `### ${k}\n${v}`).join('\n\n')}
+${Object.entries(PRODUCT_TYPE_STRATEGIES)
+  .map(([k, v]) => `### ${k}\n${v}`)
+  .join('\n\n')}
 
 ## COMMUNICATION STYLE
 ${COMMUNICATION_STYLE.tone}
@@ -533,14 +620,16 @@ ${JSON.stringify(COMMUNICATION_STYLE.language_patterns, null, 2)}
 Action Bias: ${COMMUNICATION_STYLE.action_bias}
 
 ## HANDLING PUSHBACK
-${Object.entries(PUSHBACK_RESPONSES).map(([k, v]) => `- ${k}: ${v}`).join('\n')}
+${Object.entries(PUSHBACK_RESPONSES)
+  .map(([k, v]) => `- ${k}: ${v}`)
+  .join('\n')}
 
 ## SUCCESS METRICS
 DOING WELL:
-${AGENT_SUCCESS_METRICS.doing_well.map(m => `- ${m}`).join('\n')}
+${AGENT_SUCCESS_METRICS.doing_well.map((m) => `- ${m}`).join('\n')}
 
 NOT DOING WELL:
-${AGENT_SUCCESS_METRICS.not_doing_well.map(m => `- ${m}`).join('\n')}
+${AGENT_SUCCESS_METRICS.not_doing_well.map((m) => `- ${m}`).join('\n')}
 
 ${PARALLEL_WORKSTREAMS_GUIDE}
 
@@ -551,6 +640,6 @@ ${EXAMPLE_INTERACTION_CONTENT}
 ${FINAL_INSTRUCTION}
 `,
   model: {
-    id: "openai/gpt-4o",
+    id: 'openai/gpt-4o',
   },
 });
