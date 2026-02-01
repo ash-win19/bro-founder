@@ -2,12 +2,6 @@ import { motion } from "framer-motion";
 import { Lightbulb, Search, Building2, Rocket, Check } from "lucide-react";
 import type { WorkspacePhase, PhaseStatus } from "@/contexts/ProductContext";
 
-const getPhaseStatus = (phaseIndex: number, currentIndex: number): PhaseStatus => {
-  if (phaseIndex < currentIndex) return "completed";
-  if (phaseIndex === currentIndex) return "in-progress";
-  return "not-started";
-};
-
 const StatusIndicator = ({ status }: { status: PhaseStatus }) => {
   if (status === "completed") {
     return (
@@ -25,6 +19,7 @@ const StatusIndicator = ({ status }: { status: PhaseStatus }) => {
 interface StatusBarProps {
   currentPhase: WorkspacePhase;
   onPhaseChange: (phase: WorkspacePhase) => void;
+  phaseStatuses: Record<WorkspacePhase, PhaseStatus>;
 }
 
 const phases: { id: WorkspacePhase; label: string; icon: typeof Lightbulb }[] = [
@@ -34,7 +29,7 @@ const phases: { id: WorkspacePhase; label: string; icon: typeof Lightbulb }[] = 
   { id: "mvp", label: "MVP", icon: Rocket },
 ];
 
-const StatusBar = ({ currentPhase, onPhaseChange }: StatusBarProps) => {
+const StatusBar = ({ currentPhase, onPhaseChange, phaseStatuses }: StatusBarProps) => {
   const currentIndex = phases.findIndex((p) => p.id === currentPhase);
 
   return (
@@ -43,8 +38,8 @@ const StatusBar = ({ currentPhase, onPhaseChange }: StatusBarProps) => {
         {phases.map((phase, index) => {
           const Icon = phase.icon;
           const isActive = phase.id === currentPhase;
-          const isPast = index < currentIndex;
-          const status = getPhaseStatus(index, currentIndex);
+          const status = phaseStatuses[phase.id];
+          const isPast = status === "completed";
 
           return (
             <div key={phase.id} className="flex items-center h-20">

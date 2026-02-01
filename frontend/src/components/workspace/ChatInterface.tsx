@@ -12,22 +12,16 @@ import { math } from "@streamdown/math";
 import { cjk } from "@streamdown/cjk";
 import "katex/dist/katex.min.css";
 
-// Minimum messages needed to consider a phase "complete"
-const MIN_MESSAGES_FOR_COMPLETION = 4;
-
 interface ChatInterfaceProps {
   currentPhase: WorkspacePhase;
 }
 
 const ChatInterface = ({ currentPhase }: ChatInterfaceProps) => {
-  const { messages, addMessage, setProductData, productData } = useProduct();
+  const { messages, addMessage, setProductData, productData, canGoToOverview } = useProduct();
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  // Phase is considered complete when there are enough messages exchanged
-  const isPhaseComplete = messages.length >= MIN_MESSAGES_FOR_COMPLETION;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -150,7 +144,7 @@ const ChatInterface = ({ currentPhase }: ChatInterfaceProps) => {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <OverviewButton isPhaseComplete={isPhaseComplete} />
+          <OverviewButton isPhaseComplete={canGoToOverview} />
           <div className="flex items-center gap-2 px-3 py-1.5 bg-secondary rounded-lg border border-border">
             <Command className="w-3 h-3 text-muted-foreground" />
             <span className="text-xs text-muted-foreground font-mono">K</span>

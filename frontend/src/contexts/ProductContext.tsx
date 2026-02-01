@@ -56,6 +56,8 @@ interface ProductContextType {
   setCurrentPhase: (phase: WorkspacePhase) => void;
   phaseStatuses: Record<WorkspacePhase, PhaseStatus>;
   hasData: boolean;
+  isPhaseComplete: (phase: WorkspacePhase) => boolean;
+  canGoToOverview: boolean;
 }
 
 const defaultProductData: ProductData = {
@@ -97,15 +99,49 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
   ]);
   const [currentPhase, setCurrentPhaseState] = useState<WorkspacePhase>("brainstorming");
 
-  // Calculate phase statuses based on message count per phase
+  // Validation rules for each phase
+  const isPhaseComplete = (phase: WorkspacePhase): boolean => {
+    switch (phase) {
+      case "brainstorming":
+        return Boolean(
+          productData.problemStatement &&
+          productData.solution &&
+          (productData.name || messages.length >= 4)
+        );
+      case "market-research":
+        return Boolean(
+          productData.targetUsers &&
+          (productData.marketSize || productData.competitors.length > 0)
+        );
+      case "business-model":
+        return Boolean(
+          productData.revenueModel &&
+          productData.pricing
+        );
+      case "mvp":
+        return Boolean(
+          productData.coreFeatures.length > 0 &&
+          (productData.techStack.length > 0 || productData.timeline)
+        );
+      default:
+        return false;
+    }
+  };
+
+  // Calculate phase statuses based on data completion
   const getPhaseStatuses = (): Record<WorkspacePhase, PhaseStatus> => {
     const phases: WorkspacePhase[] = ["brainstorming", "market-research", "business-model", "mvp"];
     const currentIndex = phases.indexOf(currentPhase);
-    
+
     return phases.reduce((acc, phase, index) => {
-      if (index < currentIndex) {
+      const phaseIsComplete = isPhaseComplete(phase);
+
+      if (phaseIsComplete && index < currentIndex) {
         acc[phase] = "completed";
       } else if (index === currentIndex) {
+        acc[phase] = phaseIsComplete ? "completed" : "in-progress";
+      } else if (index < currentIndex && !phaseIsComplete) {
+        // Previous phase that's incomplete
         acc[phase] = "in-progress";
       } else {
         acc[phase] = "not-started";
@@ -140,11 +176,14 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
 
   // Check if there's meaningful data entered
   const hasData = Boolean(
-    productData.name || 
-    productData.problemStatement || 
+    productData.name ||
+    productData.problemStatement ||
     productData.solution ||
     messages.length > 3 // More than just initial welcome messages
   );
+
+  // Check if user can go to overview - need at least brainstorm phase complete
+  const canGoToOverview = isPhaseComplete("brainstorming") && messages.length >= 4;
 
   return (
     <ProductContext.Provider
@@ -158,6 +197,8 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
         setCurrentPhase,
         phaseStatuses: getPhaseStatuses(),
         hasData,
+        isPhaseComplete,
+        canGoToOverview,
       }}
     >
       {children}
