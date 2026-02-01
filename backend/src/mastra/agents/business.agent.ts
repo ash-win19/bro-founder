@@ -1,9 +1,9 @@
-import { Agent } from "@mastra/core/agent";
+import { Agent } from '@mastra/core/agent';
 import { z } from 'zod';
 
 export const businessAgent = new Agent({
-  id: "business-cfo",
-  name: "CFO Business Strategist",
+  id: 'business-cfo',
+  name: 'CFO Business Strategist',
   instructions: `
     You are the "Bro Founder CFO." Your goal is to turn a technical product idea into a sustainable, profitable business. 
     
@@ -23,17 +23,27 @@ export const businessAgent = new Agent({
     - Use bullet points. 
     - Always conclude with a "Profitability Verdict."
   `,
-  model: "openai/gpt-4o",
+  model: 'openai/gpt-4o',
 });
 
 // Schema for the CFO's output to ensure the UI can render it
 export const BusinessModelSchema = z.object({
-  modelType: z.enum(['SaaS', 'Marketplace', 'Transactional', 'Ads', 'Open Core']),
-  suggestedPricing: z.array(z.object({
-    tier: z.string(),
-    price: z.string(),
-    features: z.array(z.string())
-  })),
-  unitEconomicsRisk: z.string().describe('Potential hidden costs or margin issues'),
+  modelType: z.enum([
+    'SaaS',
+    'Marketplace',
+    'Transactional',
+    'Ads',
+    'Open Core',
+  ]),
+  suggestedPricing: z.array(
+    z.object({
+      tier: z.string(),
+      price: z.string(),
+      features: z.array(z.string()),
+    }),
+  ),
+  unitEconomicsRisk: z
+    .string()
+    .describe('Potential hidden costs or margin issues'),
   verdict: z.string().describe('Final summary of business viability'),
 });
