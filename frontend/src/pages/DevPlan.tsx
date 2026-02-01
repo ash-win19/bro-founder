@@ -357,7 +357,7 @@ const DevPlan = () => {
             className="fixed bottom-8 right-8"
           >
             <Button
-              onClick={() => navigate("/pitch-network")}
+              onClick={() => navigate("/finalpitch")}
               className="gap-2 shadow-[0_0_30px_-5px_hsl(var(--primary)/0.5)]"
               size="lg"
             >
