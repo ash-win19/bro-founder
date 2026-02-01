@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { mastra, executeOrchestrator, AgentName } from './mastra.config';
+import { mastra, executeOrchestrator, executeGeneral, AgentName } from './mastra.config';
 import { OrchestratorInput } from './agents/orchestrator.agent';
+import { GeneralInput } from './agents/general.agent';
 
 @Injectable()
 export class AgentsService {
@@ -24,6 +25,26 @@ export class AgentsService {
       };
     } catch (error) {
       this.logger.error('Error executing orchestrator task:', error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+
+  /**
+   * Execute the general agent with a question
+   */
+  async executeGeneralTask(input: GeneralInput) {
+    try {
+      this.logger.log(`Executing general task: ${input.question}`);
+      const result = await executeGeneral(input);
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      this.logger.error('Error executing general task:', error);
       return {
         success: false,
         error: error.message,

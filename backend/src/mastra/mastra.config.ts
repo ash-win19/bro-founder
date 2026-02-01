@@ -1,5 +1,6 @@
 import { Mastra } from '@mastra/core';
 import { orchestratorAgent } from './agents/orchestrator.agent';
+import { generalAgent } from './agents/general.agent';
 import { businessAgent } from './agents/business.agent';
 import { mvpPlannerAgent } from './agents/mvp.agent';
 
@@ -13,6 +14,7 @@ import { mvpPlannerAgent } from './agents/mvp.agent';
 export const mastra = new Mastra({
   agents: {
     orchestrator: orchestratorAgent,
+    general: generalAgent,
     business: businessAgent,
     mvpPlanner: mvpPlannerAgent,
     // Add more agents here as needed
@@ -26,6 +28,11 @@ export const mastra = new Mastra({
 // Export individual agents for direct access if needed
 export const agents = {
   orchestrator: mastra.getAgent('orchestrator'),
+  general: mastra.getAgent('general'),
+};
+
+// Type for available agent names
+export type AgentName = 'orchestrator' | 'general';
   business: mastra.getAgent('business'),
 };
 
@@ -56,6 +63,31 @@ export async function executeOrchestrator(input: {
   // Format the input as a user message with context
   const messages = [
     { role: 'user' as const, content: input.task },
+  ];
+
+  // Add context as additional messages if provided
+  if (input.context) {
+    messages.push({
+      role: 'user' as const,
+      content: `Additional context: ${JSON.stringify(input.context)}`,
+    });
+  }
+
+  return await agent.generate(messages);
+}
+
+// Helper function to execute general agent
+export async function executeGeneral(input: {
+  question: string;
+  context?: Record<string, any>;
+  userId?: string;
+  sessionId?: string;
+}) {
+  const agent = mastra.getAgent('general');
+
+  // Format the input as a user message with context
+  const messages = [
+    { role: 'user' as const, content: input.question },
   ];
 
   // Add context as additional messages if provided
