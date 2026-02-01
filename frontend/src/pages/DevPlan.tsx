@@ -1,10 +1,12 @@
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Send, Terminal, Layout, Database, Cloud, Paintbrush, Brain, Clipboard, Check } from "lucide-react";
+import { ArrowLeft, ArrowRight, Send, Terminal, Layout, Database, Cloud, Paintbrush, Brain, Clipboard, Check, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useProduct } from "@/contexts/ProductContext";
+import { generateDevPlan } from "@/lib/api";
 
 const executionPhases = [
   {
@@ -59,9 +61,45 @@ const initialMessages = [
 
 const DevPlan = () => {
   const navigate = useNavigate();
+  const {
+    productData,
+    hasData,
+    devPlanData,
+    setDevPlanData,
+    isGeneratingDevPlan,
+    setIsGeneratingDevPlan,
+  } = useProduct();
   const [messages, setMessages] = useState(initialMessages);
   const [inputValue, setInputValue] = useState("");
   const [copied, setCopied] = useState(false);
+
+  // Generate dev plan when component mounts and we have data
+  useEffect(() => {
+    const fetchDevPlan = async () => {
+      if (hasData && !devPlanData && !isGeneratingDevPlan) {
+        setIsGeneratingDevPlan(true);
+        try {
+          const plan = await generateDevPlan(productData);
+          setDevPlanData(plan);
+        } catch (error) {
+          console.error('Error generating dev plan:', error);
+        } finally {
+          setIsGeneratingDevPlan(false);
+        }
+      }
+    };
+
+    fetchDevPlan();
+  }, [hasData, devPlanData, isGeneratingDevPlan, productData, setDevPlanData, setIsGeneratingDevPlan]);
+
+  // Use AI-generated data or fallback to hardcoded data
+  const displayExecutionPhases = devPlanData?.executionPhases || executionPhases;
+  const displayTechStack = devPlanData?.techStack?.map((tech, idx) => ({
+    name: tech.name,
+    icon: [Layout, Database, Paintbrush, Cloud, Brain][idx % 5],
+    version: tech.version,
+  })) || techStack;
+  const displayBuilderPrompt = devPlanData?.builderPrompt || builderPrompt;
 
   const handleSendMessage = () => {
     if (!inputValue.trim()) return;
@@ -82,10 +120,48 @@ const DevPlan = () => {
   };
 
   const handleCopyPrompt = async () => {
-    await navigator.clipboard.writeText(builderPrompt);
+    await navigator.clipboard.writeText(displayBuilderPrompt);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  // Show loading state while generating dev plan
+  if (isGeneratingDevPlan) {
+    return (
+      <div className="min-h-screen w-full bg-background flex flex-col">
+        <motion.header
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm px-6 py-4"
+        >
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/overview")}
+            className="gap-2 text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Overview
+          </Button>
+        </motion.header>
+        <div className="flex-1 flex items-center justify-center">
+          <motion.div
+            className="flex flex-col items-center justify-center text-center px-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+              <Loader2 className="w-8 h-8 text-primary animate-spin" />
+            </div>
+            <h2 className="text-xl font-semibold text-foreground mb-2">Generating Your Development Plan</h2>
+            <p className="text-sm text-muted-foreground max-w-md">
+              Our AI is creating a detailed technical roadmap and implementation guide...
+            </p>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full bg-background flex flex-col">
@@ -196,10 +272,10 @@ const DevPlan = () => {
               </h2>
               <Card className="bg-card border-border p-6">
                 <div className="space-y-6">
-                  {executionPhases.map((phase, index) => (
+                  {displayExecutionPhases.map((phase, index) => (
                     <div key={phase.phase} className="relative">
                       {/* Vertical connecting line */}
-                      {index < executionPhases.length - 1 && (
+                      {index < displayExecutionPhases.length - 1 && (
                         <div className="absolute left-4 top-10 bottom-0 w-0.5 bg-border -mb-6 h-[calc(100%+1.5rem)]" />
                       )}
                       
@@ -303,10 +379,10 @@ const DevPlan = () => {
                     )}
                   </Button>
                 </div>
-                
+
                 {/* Code Content */}
                 <div className="p-4 font-mono text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                  {builderPrompt}
+                  {displayBuilderPrompt}
                 </div>
               </div>
             </motion.section>
@@ -322,7 +398,7 @@ const DevPlan = () => {
                 Approved Technology Stack
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                {techStack.map((tech, index) => {
+                {displayTechStack.map((tech, index) => {
                   const Icon = tech.icon;
                   return (
                     <motion.div

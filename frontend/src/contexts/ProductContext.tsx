@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from "react";
+import type { OverviewData, DevPlanData, PitchData } from "@/lib/api";
 
 export type WorkspacePhase = "brainstorming" | "market-research" | "business-model" | "mvp";
 export type PhaseStatus = "not-started" | "in-progress" | "completed";
@@ -58,6 +59,18 @@ interface ProductContextType {
   hasData: boolean;
   isPhaseComplete: (phase: WorkspacePhase) => boolean;
   canGoToOverview: boolean;
+  overviewData: OverviewData | null;
+  setOverviewData: (data: OverviewData) => void;
+  isGeneratingOverview: boolean;
+  setIsGeneratingOverview: (isGenerating: boolean) => void;
+  devPlanData: DevPlanData | null;
+  setDevPlanData: (data: DevPlanData) => void;
+  isGeneratingDevPlan: boolean;
+  setIsGeneratingDevPlan: (isGenerating: boolean) => void;
+  pitchData: PitchData | null;
+  setPitchData: (data: PitchData) => void;
+  isGeneratingPitch: boolean;
+  setIsGeneratingPitch: (isGenerating: boolean) => void;
 }
 
 const defaultProductData: ProductData = {
@@ -98,6 +111,12 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
     },
   ]);
   const [currentPhase, setCurrentPhaseState] = useState<WorkspacePhase>("brainstorming");
+  const [overviewData, setOverviewData] = useState<OverviewData | null>(null);
+  const [isGeneratingOverview, setIsGeneratingOverview] = useState(false);
+  const [devPlanData, setDevPlanData] = useState<DevPlanData | null>(null);
+  const [isGeneratingDevPlan, setIsGeneratingDevPlan] = useState(false);
+  const [pitchData, setPitchData] = useState<PitchData | null>(null);
+  const [isGeneratingPitch, setIsGeneratingPitch] = useState(false);
 
   // Validation rules for each phase
   const isPhaseComplete = (phase: WorkspacePhase): boolean => {
@@ -182,8 +201,11 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
     messages.length > 3 // More than just initial welcome messages
   );
 
-  // Check if user can go to overview - need at least brainstorm phase complete
-  const canGoToOverview = isPhaseComplete("brainstorming") && messages.length >= 4;
+  // Check if user can go to overview - need at least brainstorm phase complete OR be in MVP phase
+  const canGoToOverview =
+    (isPhaseComplete("brainstorming") && messages.length >= 4) ||
+    currentPhase === "mvp" ||
+    currentPhase === "business-model";
 
   return (
     <ProductContext.Provider
@@ -199,6 +221,18 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
         hasData,
         isPhaseComplete,
         canGoToOverview,
+        overviewData,
+        setOverviewData,
+        isGeneratingOverview,
+        setIsGeneratingOverview,
+        devPlanData,
+        setDevPlanData,
+        isGeneratingDevPlan,
+        setIsGeneratingDevPlan,
+        pitchData,
+        setPitchData,
+        isGeneratingPitch,
+        setIsGeneratingPitch,
       }}
     >
       {children}

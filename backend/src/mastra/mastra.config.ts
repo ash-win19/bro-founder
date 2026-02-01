@@ -51,27 +51,159 @@ export function getAgent(name: AgentName) {
   return mastra.getAgent(name);
 }
 
-// Helper function to execute orchestrator agent
+// Intelligent routing function to determine which agent to use
+function routeToAgent(task: string, context?: Record<string, any>): AgentName {
+  const lowerTask = task.toLowerCase();
+  const currentPhase = context?.currentPhase || '';
+
+  // Phase-based routing
+  if (currentPhase === 'brainstorming' || currentPhase === 'brainstorm') {
+    // Check if they're asking about business/pricing in brainstorm phase
+    if (
+      lowerTask.includes('revenue') ||
+      lowerTask.includes('pricing') ||
+      lowerTask.includes('monetize') ||
+      lowerTask.includes('business model') ||
+      lowerTask.includes('make money')
+    ) {
+      return 'business';
+    }
+    return 'brainstorm';
+  }
+
+  if (
+    currentPhase === 'market-research' ||
+    currentPhase === 'market' ||
+    currentPhase === 'market_research'
+  ) {
+    return 'brainstorm'; // Market research still uses brainstorm agent for validation
+  }
+
+  if (
+    currentPhase === 'business-model' ||
+    currentPhase === 'business' ||
+    currentPhase === 'business_model'
+  ) {
+    return 'business';
+  }
+
+  if (currentPhase === 'mvp') {
+    return 'mvpPlanner';
+  }
+
+  // Keyword-based routing (when no phase or general phase)
+  // Business/Revenue related
+  if (
+    lowerTask.includes('revenue') ||
+    lowerTask.includes('pricing') ||
+    lowerTask.includes('monetize') ||
+    lowerTask.includes('business model') ||
+    lowerTask.includes('make money') ||
+    lowerTask.includes('unit economics') ||
+    lowerTask.includes('ltv') ||
+    lowerTask.includes('cac') ||
+    lowerTask.includes('profit')
+  ) {
+    return 'business';
+  }
+
+  // MVP/Technical Planning related
+  if (
+    lowerTask.includes('mvp') ||
+    lowerTask.includes('build') ||
+    lowerTask.includes('develop') ||
+    lowerTask.includes('tech stack') ||
+    lowerTask.includes('architecture') ||
+    lowerTask.includes('implement') ||
+    lowerTask.includes('roadmap') ||
+    lowerTask.includes('timeline') ||
+    lowerTask.includes('how long') ||
+    lowerTask.includes('steps to')
+  ) {
+    return 'mvpPlanner';
+  }
+
+  // Brainstorm/Validation related
+  if (
+    lowerTask.includes('idea') ||
+    lowerTask.includes('validate') ||
+    lowerTask.includes('viable') ||
+    lowerTask.includes('build or pivot') ||
+    lowerTask.includes('should i build') ||
+    lowerTask.includes('market fit') ||
+    lowerTask.includes('competitor') ||
+    lowerTask.includes('problem') ||
+    lowerTask.includes('solution')
+  ) {
+    return 'brainstorm';
+  }
+
+  // Default to general for everything else
+  return 'general';
+}
+
+// Helper function to execute orchestrator agent with intelligent routing
 export async function executeOrchestrator(input: {
   task: string;
   context?: Record<string, any>;
   userId?: string;
   sessionId?: string;
 }) {
-  const agent = mastra.getAgent('orchestrator');
+  // Determine which agent to route to
+  const selectedAgent = routeToAgent(input.task, input.context);
 
-  // Format the input as a user message with context
-  const messages = [{ role: 'user' as const, content: input.task }];
+  console.log(
+    `[Orchestrator] Routing to ${selectedAgent} agent for task: "${input.task.substring(0, 50)}..."`,
+  );
 
-  // Add context as additional messages if provided
+  const agent = mastra.getAgent(selectedAgent);
+
+  // Format the input as a user message
+  let content = input.task;
+
+  // Add context information for better agent responses
   if (input.context) {
-    messages.push({
-      role: 'user' as const,
-      content: `Additional context: ${JSON.stringify(input.context)}`,
-    });
+    const { currentPhase, productData } = input.context;
+
+    // Build context string
+    let contextInfo = '';
+    if (currentPhase) {
+      contextInfo += `Current Phase: ${currentPhase}\n`;
+    }
+    if (productData) {
+      const {
+        name,
+        problemStatement,
+        solution,
+        targetUsers,
+        revenueModel,
+        coreFeatures,
+      } = productData as any;
+
+      if (name) contextInfo += `Product Name: ${name}\n`;
+      if (problemStatement)
+        contextInfo += `Problem: ${problemStatement}\n`;
+      if (solution) contextInfo += `Solution: ${solution}\n`;
+      if (targetUsers) contextInfo += `Target Users: ${targetUsers}\n`;
+      if (revenueModel) contextInfo += `Revenue Model: ${revenueModel}\n`;
+      if (coreFeatures?.length > 0)
+        contextInfo += `Core Features: ${coreFeatures.join(', ')}\n`;
+    }
+
+    if (contextInfo) {
+      content = `${contextInfo}\nUser Query: ${input.task}`;
+    }
   }
 
-  return await agent.generate(messages);
+  const messages = [{ role: 'user' as const, content }];
+
+  const result = await agent.generate(messages);
+
+  // Add metadata about which agent was used
+  return {
+    ...result,
+    agentUsed: selectedAgent,
+  };
 }
 
 // Helper function to execute brainstorm agent

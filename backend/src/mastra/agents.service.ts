@@ -27,12 +27,19 @@ export class AgentsService {
 
       // Extract the text response from Mastra's generate result
       const responseText = result?.text || '';
+      const agentUsed = result?.agentUsed || 'orchestrator';
+
+      this.logger.log(`Agent used: ${agentUsed}`);
 
       return {
         success: true,
         data: {
           ...result, // Include all properties from Mastra first
           response: responseText, // Add response field for frontend compatibility
+          metadata: {
+            agentUsed,
+            timestamp: new Date().toISOString(),
+          },
         },
       };
     } catch (error) {
