@@ -24,9 +24,16 @@ export class AgentsService {
     try {
       this.logger.log(`Executing orchestrator task: ${input.task}`);
       const result = await executeOrchestrator(input);
+
+      // Extract the text response from Mastra's generate result
+      const responseText = result?.text || '';
+
       return {
         success: true,
-        data: result,
+        data: {
+          ...result, // Include all properties from Mastra first
+          response: responseText, // Add response field for frontend compatibility
+        },
       };
     } catch (error) {
       this.logger.error('Error executing orchestrator task:', error);

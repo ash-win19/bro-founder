@@ -4,6 +4,13 @@ import { Send, Command, Sparkles, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useProduct, type WorkspacePhase } from "@/contexts/ProductContext";
 import OverviewButton from "./OverviewButton";
+import { callOrchestratorAgent } from "@/lib/api";
+import { Streamdown } from "streamdown";
+import { code } from "@streamdown/code";
+import { mermaid } from "@streamdown/mermaid";
+import { math } from "@streamdown/math";
+import { cjk } from "@streamdown/cjk";
+import "katex/dist/katex.min.css";
 
 // Minimum messages needed to consider a phase "complete"
 const MIN_MESSAGES_FOR_COMPLETION = 4;
@@ -13,8 +20,9 @@ interface ChatInterfaceProps {
 }
 
 const ChatInterface = ({ currentPhase }: ChatInterfaceProps) => {
-  const { messages, addMessage, setProductData } = useProduct();
+  const { messages, addMessage, setProductData, productData } = useProduct();
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -74,8 +82,8 @@ const ChatInterface = ({ currentPhase }: ChatInterfaceProps) => {
     }
   };
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
 
     const userMessage = {
       id: Date.now().toString(),
@@ -86,18 +94,39 @@ const ChatInterface = ({ currentPhase }: ChatInterfaceProps) => {
 
     addMessage(userMessage);
     extractDataFromMessage(input);
+    const userInput = input;
     setInput("");
+    setIsLoading(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      // Call orchestrator agent
+      const response = await callOrchestratorAgent({
+        task: userInput,
+        context: {
+          currentPhase,
+          productData,
+        },
+      });
+
       const aiResponse = {
         id: (Date.now() + 1).toString(),
-        content: "I'm analyzing your input. As your AI technical co-founder, I'll help you think through this systematically. Let me break down the key considerations...",
+        content: response.response,
         sender: "ai" as const,
         timestamp: new Date(),
       };
       addMessage(aiResponse);
-    }, 1000);
+    } catch (error) {
+      console.error("Error calling orchestrator agent:", error);
+      const errorResponse = {
+        id: (Date.now() + 1).toString(),
+        content: "Sorry, I encountered an error processing your request. Please make sure the backend is running and try again.",
+        sender: "ai" as const,
+        timestamp: new Date(),
+      };
+      addMessage(errorResponse);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -144,8 +173,8 @@ const ChatInterface = ({ currentPhase }: ChatInterfaceProps) => {
               {/* Avatar */}
               <div className={`
                 w-10 h-10 rounded-lg shrink-0 flex items-center justify-center
-                ${message.sender === "ai" 
-                  ? 'bg-primary/20 border border-primary/30' 
+                ${message.sender === "ai"
+                  ? 'bg-primary/20 border border-primary/30'
                   : 'bg-secondary border border-border'
                 }
               `}>
@@ -159,20 +188,52 @@ const ChatInterface = ({ currentPhase }: ChatInterfaceProps) => {
               {/* Message bubble */}
               <div className={`
                 max-w-[70%] p-4 rounded-lg border
-                ${message.sender === "ai" 
-                  ? 'bg-card border-border rounded-tl-none' 
+                ${message.sender === "ai"
+                  ? 'bg-card border-border rounded-tl-none'
                   : 'bg-primary/10 border-primary/30 rounded-tr-none'
                 }
               `}>
-                <p className="text-sm leading-relaxed">
-                  {message.content}
-                </p>
+                {message.sender === "ai" ? (
+                  <div className="text-sm leading-relaxed">
+                    <Streamdown
+                      plugins={{ code, mermaid, math, cjk }}
+                      isAnimating={isLoading && message.id === messages[messages.length - 1]?.id}
+                    >
+                      {message.content}
+                    </Streamdown>
+                  </div>
+                ) : (
+                  <p className="text-sm leading-relaxed">
+                    {message.content}
+                  </p>
+                )}
                 <span className="text-[10px] text-muted-foreground/60 font-mono mt-2 block">
                   {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
             </motion.div>
           ))}
+
+          {/* Loading indicator */}
+          {isLoading && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="flex gap-4"
+            >
+              <div className="w-10 h-10 rounded-lg shrink-0 flex items-center justify-center bg-primary/20 border border-primary/30">
+                <Sparkles className="w-5 h-5 text-primary animate-pulse" />
+              </div>
+              <div className="max-w-[70%] p-4 rounded-lg border bg-card border-border rounded-tl-none">
+                <div className="flex gap-1">
+                  <span className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                  <span className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                  <span className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                </div>
+              </div>
+            </motion.div>
+          )}
         </AnimatePresence>
         <div ref={messagesEndRef} />
       </div>
@@ -191,7 +252,7 @@ const ChatInterface = ({ currentPhase }: ChatInterfaceProps) => {
           />
           <Button
             onClick={handleSend}
-            disabled={!input.trim()}
+            disabled={!input.trim() || isLoading}
             size="icon"
             className="mr-2 w-8 h-8 rounded-md"
           >
