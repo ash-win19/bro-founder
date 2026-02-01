@@ -1,10 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  mastra,
-  executeOrchestrator,
-  OrchestratorInput,
-} from './mastra.config';
+import { mastra, executeOrchestrator, AgentName } from './mastra.config';
+import { OrchestratorInput } from './agents/orchestrator.agent';
 
 @Injectable()
 export class AgentsService {
@@ -37,7 +34,7 @@ export class AgentsService {
   /**
    * Get a specific agent by name
    */
-  getAgent(name: string) {
+  getAgent(name: AgentName) {
     try {
       return mastra.getAgent(name);
     } catch (error) {
@@ -49,7 +46,7 @@ export class AgentsService {
   /**
    * Execute any agent by name with custom input
    */
-  async executeAgent(agentName: string, input: string) {
+  async executeAgent(agentName: AgentName, input: string) {
     try {
       this.logger.log(`Executing agent: ${agentName}`);
       const agent = this.getAgent(agentName);
@@ -70,12 +67,13 @@ export class AgentsService {
   /**
    * Stream responses from an agent
    */
-  async *streamAgent(agentName: string, input: string) {
+  async *streamAgent(agentName: AgentName, input: string) {
     try {
       const agent = this.getAgent(agentName);
       const stream = await agent.stream(input);
 
-      for await (const chunk of stream) {
+      // According to Mastra docs, iterate over textStream
+      for await (const chunk of stream.textStream) {
         yield chunk;
       }
     } catch (error) {
