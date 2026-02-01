@@ -30,8 +30,7 @@ export class AgentsController {
     this.logger.log(`POST /agents/${agentName}`);
 
     // Validate that agentName is a valid AgentName
-    const validAgents: AgentName[] = ['orchestrator', 'general'];
-    const validAgents: AgentName[] = ['orchestrator', 'mvpPlanner'];
+    const validAgents: AgentName[] = ['orchestrator', 'general', 'business', 'mvpPlanner'];
     if (!validAgents.includes(agentName as AgentName)) {
       throw new BadRequestException(`Invalid agent name: ${agentName}. Valid agents: ${validAgents.join(', ')}`);
     }
@@ -54,7 +53,12 @@ export class AgentsController {
           description:
             'General-purpose assistant for answering questions and providing information',
         },
-        // Add more agents here as you create them
+        {
+          name: 'business',
+          description:
+            'Business strategy expert that helps validate ideas and create business plans',
+        },
+        {
           name: 'mvpPlanner',
           description: 'Pragmatic technical co-founder that translates product ideas into actionable MVP roadmaps',
         },
