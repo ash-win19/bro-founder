@@ -1,21 +1,19 @@
 import { Agent } from '@mastra/core/agent';
 import { z } from 'zod';
+import { brainstormModel } from '../providers/keywordsai.provider';
 
+/**
+ * Brainstorm Agent
+ *
+ * IMPORTANT: This agent uses Keywords AI Prompt Management.
+ * The actual prompt/instructions are managed in Keywords AI dashboard.
+ * Prompt ID: b311f8e47d9c426fa43028fe0afb195a
+ */
 export const brainstormAgent = new Agent({
   id: 'brainstorm-realist',
   name: 'Brainstorm Agent',
-  instructions: `
-    You are the Brainstorm Agent, the "Technical Co-Founder" persona of Bro Founder. Your goal is to solve the thinking problem before the building problem[cite: 22, 197]. 
-
-    When a user provides an idea, you do not give "fluffy" advice[cite: 8, 205]. Instead, you:
-    1. **Narrow the Scope:** Strip away UI distractions and identify the core backend logic and problem-solution fit[cite: 7, 11].
-    2. **Market Reality Check:** Challenge the idea against market signals (YC, Crunchbase, GitHub) to see if the market is crowded or if there is a real "wedge".
-    3. **Validate Viability:** Identify "complexity multipliers" and technical moats. If an idea is poorly architected or shouldn't be built, you recommend a "Pivot" or "Kill" decision[cite: 15, 46, 177].
-    4. **Tweak for Success:** Suggest architectural pivots—like moving from a generic platform to a specialized tool—to avoid hidden dependencies and infrastructure risk[cite: 18, 19, 194].
-
-    Your tone is direct, data-driven, and focused on systems, not vibes[cite: 56, 132]. You provide "read-only" analysis that helps founders make clear Build/Pivot/Kill decisions[cite: 46, 53].
-  `,
-  model: 'openai/gpt-4o',
+  instructions: '',
+  model: brainstormModel,
 });
 
 // Input Schema for the Brainstorm Agent
@@ -46,16 +44,16 @@ export const BrainstormOutputSchema = z.object({
   theWedge: z
     .string()
     .describe(
-      'The specific entry point or competitive advantage identified [cite: 26]',
+      'The specific entry point or competitive advantage identified',
     ),
   technicalMoat: z
     .string()
     .describe(
-      'The backend architectural advantage that makes this hard to copy [cite: 37]',
+      'The backend architectural advantage that makes this hard to copy',
     ),
   verdict: z
     .enum(['Build', 'Pivot', 'Kill'])
-    .describe('The definitive recommendation [cite: 46]'),
+    .describe('The definitive recommendation'),
   suggestedTweaks: z
     .array(z.string())
     .describe(
@@ -63,5 +61,5 @@ export const BrainstormOutputSchema = z.object({
     ),
   nextSteps: z
     .array(z.string())
-    .describe('Immediate actions to move to the MarketIntel phase [cite: 82]'),
+    .describe('Immediate actions to move to the MarketIntel phase'),
 });

@@ -1,12 +1,19 @@
 import { Agent } from '@mastra/core/agent';
 import { z } from 'zod';
+import { generalModel } from '../providers/keywordsai.provider';
 
+/**
+ * General Agent
+ *
+ * IMPORTANT: This agent uses Keywords AI Prompt Management.
+ * The actual prompt/instructions are managed in Keywords AI dashboard.
+ * Prompt ID: 5e05e954e77547358dd06ae14c689a3f
+ */
 export const generalAgent = new Agent({
   id: 'general',
   name: 'General Assistant',
-  instructions:
-    'You are a helpful general-purpose assistant. Answer questions clearly, provide accurate information, and assist users with a wide range of topics. Be concise, friendly, and informative.',
-  model: 'openai/gpt-4o',
+  instructions: '',
+  model: generalModel,
 });
 
 // Schema for general agent input
