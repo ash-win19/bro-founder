@@ -28,7 +28,7 @@ const executionPhases = [
     name: "Polish",
     subtitle: "UI Polish & Deploy",
     timeline: "Week 5",
-    status: "upcoming" as const,
+    status: "upcoming soon" as const,
     tasks: ["Mobile Responsiveness", "Vercel Deployment", "Bug Bash"]
   }
 ];
